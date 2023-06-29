@@ -1,0 +1,61 @@
+version: '3.8'
+services:
+  mysqldb:
+    container_name: MYSQL
+
+    image: mysql:latest
+#    restart: always
+    ports:
+      - 3308:3306
+
+    environment:
+      MYSQL_DATABASE: dockersd
+      MYSQL_USER: docker
+      MYSQL_PASSWORD: docker
+      MYSQL_ROOT_PASSWORD: hellofriend
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+    networks:
+      - netadrian
+
+  jaeger:
+    container_name: JAEGER-ADRY
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 16686:16686
+      - 14268:14268
+
+    networks:
+      - netadrian
+
+  app:
+    container_name: SPRING-ADRY
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+    image: spring-adry
+    build: .
+    links:
+      - jaeger
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/dockersd
+      - DATABASE_USERNAME=docker
+      - DATABASE_PASSWORD=docker
+      - JAEGER_HOST=jaeger
+
+
+
+    networks:
+      - netadrian
+networks:
+  netadrian:
+    driver: bridge
