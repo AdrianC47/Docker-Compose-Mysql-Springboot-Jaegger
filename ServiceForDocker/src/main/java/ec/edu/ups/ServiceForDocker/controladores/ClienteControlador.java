@@ -42,6 +42,7 @@ public class ClienteControlador {
     @GetMapping("/clientes")
     public ResponseEntity<List<Cliente>> getAllClientes(){
         List<Cliente> listaClientes = clienteServicio.findAll();
+        System.out.println("Se han listado clientes");
         return  new ResponseEntity<List<Cliente>>(listaClientes, HttpStatus.OK);
     }
 
